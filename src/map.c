@@ -6,7 +6,7 @@
 /*   By: cbignon <cbignon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/26 15:21:04 by cbignon           #+#    #+#             */
-/*   Updated: 2021/11/18 18:11:59 by cbignon          ###   ########.fr       */
+/*   Updated: 2021/11/19 17:16:13 by cbignon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,8 @@ void	valid_map_char(char *line, t_data *data, int line_n)
 			data->map->exit++;
 		else if (line[i] == 'C')
 			data->map->coll++;
-		else if (line[i] != '0' && line[i] != '1' && line[i] != 'P' &&
-			line[i] != 'E' && line[i] != 'C')
+		else if (line[i] != '0' && line[i] != '1' && line[i] != 'P'
+			&& line[i] != 'E' && line[i] != 'C')
 			data->map->error++;
 		i++;
 	}
@@ -44,11 +44,9 @@ void	check_map_size(char **argv, t_data *data)
 	int		fd;
 	int		ret;
 	char	*line;
-	int		line_n;
 
 	fd = open(argv[1], O_RDONLY);
 	ret = 1;
-	line_n = 0;
 	while (ret > 0)
 	{
 		ret = get_next_line(fd, &line);
@@ -58,12 +56,11 @@ void	check_map_size(char **argv, t_data *data)
 			if ((int)ft_strlen(line) != data->map->map_row)
 				data->map->error++;
 		data->map->map_line++;
-		line_n++;
-		valid_map_char(line, data, line_n);
+		valid_map_char(line, data, data->map->map_line);
 		if (line)
 			free(line);
 	}
-	data->map->map2d = (char **)malloc(sizeof(char *) * ((data->map->map_line) + 1));
+	data->map->map2d = malloc(sizeof(char *) * ((data->map->map_line) + 1));
 	if (!data->map->map2d)
 		data->map->error++;
 	close(fd);
@@ -97,6 +94,15 @@ void	map_is_closed(t_data *data)
 	}
 }
 
+int	verify_in_map(t_data *data)
+{
+	map_is_closed(data);
+	if (data->map->pl != 1 || data->map->exit == 0 || data->map->coll == 0
+		|| data->map->error > 0)
+		return (ft_map_error(2, data));
+	return (0);
+}
+
 int	check_map(char **argv, t_data *data)
 {
 	int		fd;
@@ -106,11 +112,11 @@ int	check_map(char **argv, t_data *data)
 
 	i = -1;
 	fd = open(argv[1], O_RDONLY);
+	if (fd == -1)
+		return (ft_map_error(1, data));
 	check_map_size(argv, data);
 	line = NULL;
 	ret = 1;
-	if (fd == -1)
-		return (ft_map_error(1, data));
 	while (ret > 0)
 	{
 		ret = get_next_line(fd, &line);
@@ -118,15 +124,7 @@ int	check_map(char **argv, t_data *data)
 		if (line)
 			free(line);
 	}
-	data->map->map2d[i + 1] = NULL;
-	map_is_closed(data);
-	if (data->map->pl != 1 || data->map->exit == 0 || data->map->coll == 0
-		|| data->map->error > 0)
-	{
-		close(fd);
-		return (ft_map_error(2, data));
-	}
-	data->map->height = data->map->map_line * 32;
-	data->map->width = data->map->map_row * 32;
+	verify_in_map(data);
+	close(fd);
 	return (0);
 }

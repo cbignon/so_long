@@ -5,33 +5,27 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: cbignon <cbignon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/10/28 10:13:28 by cbignon           #+#    #+#             */
-/*   Updated: 2021/10/28 10:14:09 by cbignon          ###   ########.fr       */
+/*   Created: 2021/11/01 15:45:08 by cbignon           #+#    #+#             */
+/*   Updated: 2021/11/19 16:52:28 by cbignon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "so_long.h"
 
-char	*ft_strdup_clean(const char *s)
+int	victory(t_data *data)
 {
-	char	*str;
-	char	*dup;
-	int		len;
-	int		x;
+	ft_putstr_fd(BOLD GREEN_T"YOU WIN!\n"RESET, 1);
+	data->on = -1;
+	return (1);
+}
 
-	str = (char *)s;
-	len = ft_strlen(str);
-	x = 0;
-	dup = (char *)malloc(sizeof(char) * len + 1);
-	if (!(dup))
-		return (NULL);
-	while (x < len)
-	{
-		dup[x] = str[x];
-		x++;
-	}
-	dup[x] = '\0';
-	if (s)
-		free((char *)s);
-	return (dup);
+int	ft_check_file_ext(char *arg)
+{
+	int	ext;
+
+	ext = ft_strclen(arg, '.');
+	arg += ext;
+	if (ft_strncmp(arg, ".ber", ext) != 0)
+		return (-1);
+	return (1);
 }

@@ -6,23 +6,48 @@
 /*   By: cbignon <cbignon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/27 20:59:15 by cbignon           #+#    #+#             */
-/*   Updated: 2021/11/18 18:19:14 by cbignon          ###   ########.fr       */
+/*   Updated: 2021/11/20 18:06:29 by cbignon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "so_long.h"
 
+void	*malloc_init_img(t_data *data, t_img *img)
+{
+	img = malloc(sizeof(t_img));
+	if (img == NULL)
+	{
+		ft_putstr_fd("a malloc problem occured\n", 1);
+		ft_simple_free(data);
+		end_mlx(data);
+		exit (0);
+	}
+	img->image = NULL;
+	return (img);
+}
+
+void	*malloc_check(void *ptr, int size)
+{
+	ptr = malloc(sizeof(char) * size);
+	if (!ptr)
+	{
+		ft_putstr_fd("a malloc problem occured\n", 1);
+		exit (0);
+	}
+	return (ptr);
+}
+
 void	init_struct(t_data *data)
 {
 	data->on = 0;
-	data->player = malloc(sizeof(t_player));
-	data->img_r = malloc(sizeof(t_img));
-	data->img_l = malloc(sizeof(t_img));
-	data->map = malloc(sizeof(t_map));
-	data->map->bush = malloc(sizeof(t_img));
-	data->map->flower = malloc(sizeof(t_img));
-	data->map->empty = malloc(sizeof(t_img));
-	data->map->out = malloc(sizeof(t_img));
+	data->player = malloc_check(data->player, sizeof(t_player));
+	data->map = malloc_check(data->map, sizeof(t_map));
+	data->img_r = malloc_init_img(data, data->img_r);
+	data->img_l = malloc_init_img(data, data->img_l);
+	data->map->bush = malloc_init_img(data, data->map->bush);
+	data->map->flower = malloc_init_img(data, data->map->flower);
+	data->map->empty = malloc_init_img(data, data->map->empty);
+	data->map->out = malloc_init_img(data, data->map->out);
 	data->player->x = -1;
 	data->player->y = -1;
 	data->player->way = 1;
@@ -36,83 +61,17 @@ void	init_struct(t_data *data)
 	data->map->map_row = 0;
 }
 
-void	ft_free_tab(t_data *data)
+void	ft_load_xpm(t_data *data, t_img *img, char *path)
 {
-	int	i;
-
-	i = 0;
-	if (data->map->map2d)
+	img->image = mlx_xpm_file_to_image(data->mlx_ptr, path,
+			&(img->width), &(img->height));
+	if (!img->image)
 	{
-		while (i < data->map->map_line)
-		{
-			if (data->map->map2d[i])
-				free(data->map->map2d[i]);
-			i++;
-		}
-	}
-	if (&(data->map->map2d))
-	{
-		free(data->map->map2d);
-		data->map->map2d = NULL;
-	}
-}
-
-void	free_struct(t_data *data)
-{
-	if (data->img_r)
-	{
-		mlx_destroy_image(data->mlx_ptr, data->img_r->image);
-		free(data->img_r);
-		data->img_r = NULL;
-	}
-	if (data->img_l)
-	{
-		mlx_destroy_image(data->mlx_ptr, data->img_l->image);
-		free(data->img_l);
-		data->img_l = NULL;
-	}
-	ft_free_tab(data);
-	if (data->player)
-	{
-		free((data->player));
-		data->player = NULL;
-	}
-	if (data->map->bush)
-	{
-		mlx_destroy_image(data->mlx_ptr, data->map->bush->image);
-		free(data->map->bush);
-		data->map->bush = NULL;
-	}
-	if (data->map->flower)
-	{
-		mlx_destroy_image(data->mlx_ptr, data->map->flower->image);
-		free(data->map->flower);
-		data->map->flower = NULL;
-	}
-	if (data->map->empty)
-	{
-		mlx_destroy_image(data->mlx_ptr, data->map->empty->image);
-		free(data->map->empty);
-		data->map->empty = NULL;
-	}
-	if (data->map->out)
-	{
-		mlx_destroy_image(data->mlx_ptr, data->map->out->image);
-		free(data->map->out);
-		data->map->out = NULL;
-	}
-	if (data->map)
-		free(data->map);
-	data->map = NULL;
-	if (data->win_ptr)
-	{
-		mlx_destroy_window(data->mlx_ptr,data->win_ptr);
-		data->win_ptr = NULL;
-	}
-	if (data->mlx_ptr)
-	{
-		mlx_destroy_display(data->mlx_ptr);
-		free(data->mlx_ptr);
-		data->mlx_ptr = NULL;
+		ft_putstr_fd("Failed loading image from ", 1);
+		ft_putstr_fd(path, 1);
+		ft_putchar_fd('\n', 1);
+		free_struct(data);
+		end_mlx(data);
+		exit(0);
 	}
 }
